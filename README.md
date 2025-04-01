@@ -1,3 +1,4 @@
+**Important**: Please review the [Working Guide](https://github.com/ashutoshchandra554/Atlantis-ECS-Fargate-Setup?tab=readme-ov-file#working) **before deployment** for required configuration and access policy changes.  
 
 # Introduction
 
