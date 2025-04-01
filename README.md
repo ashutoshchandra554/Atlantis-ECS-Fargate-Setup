@@ -82,8 +82,44 @@ Voilà, with this Atlantis is up, running and configured with Github. Everytime 
 Atlantis commands can be used as comments in the same pull request, the exact commands can be found in the documentation.
 
 
+
 ## Working
 
-The project is fully made on Terraform using HCL. 
+All infrastructure is codified with Terraform (HCL), ensuring reproducibility and version control.  
 
-Firstly the project is creating a security group 
+* Firstly, the project is creating a security group named **atlantis-sg** that allows all traffic to access port 4141 (where Atlantis is hosted). This can be changed to allow only the ip(s) that need access to the hosted Atlantis.
+
+* Next comes creation of IAM role with the following :
+   1. AmazonECSTaskExecutionRolePolicy: It grants permissions required for Amazon ECS (Elastic Container Service) tasks to interact with other AWS services. 
+   2. AmazonS3FullAccess: This role provides full access to S3 buckets (This is only needed if we store terraform state files in s3 and also full access can be changed to give only barely required access.)
+    3. AmazonDynamoDBFullAccess: This role provides full access to DynamoDB (This is only needed if we use Dynamo DB for terraform state locking and also full access can be changed to give only barely required access.)
+
+* Finally, an ECS task definition is created:
+  1. **Task name**: atlantis-task
+  2. **Task Role**: The role just created.
+  3. **Task size**:
+        Memory: `0.5GB`
+        CPU: `0.25 vCPU`
+
+
+* Container Definition are as follows: 
+  1. **Container name**: `atlantis`
+  2. **Image**: `ghcr.io/runatlantis/atlantis:latest`
+  3. **Port mappings**: **4141**
+  4. **Environment variables**(Managed through terraform.tfvars mentioned above):
+        - `ATLANTIS_GH_USER` = `<your_github_user>`
+        - `ATLANTIS_GH_TOKEN` = `<your_github_token>` 
+        - `ATLANTIS_REPO_ALLOWLIST` = `github.com/<your-org-or-user>/<your-repo>`
+
+* Finally an ECS fargate service runs 1 task (1 desired) containing the Atlantis container and the Public IP address of the task is printed to user after 1 minute (to make sure container has started successfully) using a python script.
+## Roadmap
+
+- Additional customization using repos.yaml
+- Streamlining the process of destroying and creating resources by adding the webhook url directly to Route 53.
+
+
+## Acknowledgements
+
+ - [Atlantis Parent Website](https://www.runatlantis.io/)
+ - [Atlantis Github Repo](https://github.com/runatlantis/atlantis)
+ 
