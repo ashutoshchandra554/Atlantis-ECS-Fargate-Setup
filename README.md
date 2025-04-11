@@ -53,6 +53,10 @@ After AWS cli is connected and ready run:
 ```bash
 terraform init
 ```
+For satisfying ip address display script dependency run:
+```bash
+pip install boto3
+```
 Once it is complete run:
 ```bash
 terraform plan
